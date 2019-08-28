@@ -103,6 +103,12 @@ public class GridTerrain : MonoBehaviour
         return useNorthwest;
     }
 
+    private Color32 CreateGray(int shade)
+    {
+        shade *= 10;
+        return new Color32((byte)shade, (byte)shade, (byte)shade, 255);
+    }
+
     public Mesh GenerateMesh()
     {
         var mesh = new Mesh();
@@ -114,6 +120,7 @@ public class GridTerrain : MonoBehaviour
             width * height :
             (width - 1) * (height - 1) * 6];
         var uvs = new Vector2[vertices.Length];
+        var color = new Color32[vertices.Length];
         var triangles = new int[(width - 1) * (height - 1) * 2 * 6];
         int trisIndex = 0;
         for(int x = 0; x < width; x++)
@@ -124,6 +131,8 @@ public class GridTerrain : MonoBehaviour
                 {
                     vertices[x + y * width] = TerrainData.GetNodePositionUnchecked(x, y);
                     uvs[x + y * width] = new Vector2(vertices[x + y * width].x, vertices[x + y * width].z);
+                    var nodeLvl = TerrainData.Nodes[x + y * width];
+                    color[x + y * width] = new Color32((byte)(nodeLvl * 10), (byte)(nodeLvl * 10), (byte)(nodeLvl * 10), 255);
                 }
                 
                 if (x == 0 || y == 0)
@@ -167,6 +176,10 @@ public class GridTerrain : MonoBehaviour
                     uvs[topLeft] = new Vector2(0, 1);
                     uvs[topRight] = new Vector2(1, 1);
 
+                    color[bottomLeft] = CreateGray(TerrainData[x - 1, y - 1]);
+                    color[bottomRight] = CreateGray(TerrainData[x, y - 1]);
+                    color[topLeft] = CreateGray(TerrainData[x - 1, y]);
+                    color[topRight] = CreateGray(TerrainData[x, y]);
 
                     if(CutNorthWest(vertices, topLeft, topRight, bottomLeft, bottomRight))
                     {
@@ -181,6 +194,8 @@ public class GridTerrain : MonoBehaviour
                         vertices[bottomRight2] = vertices[bottomRight];
                         uvs[topLeft2] = uvs[topLeft];
                         uvs[bottomRight2] = uvs[bottomRight];
+                        color[topLeft2] = color[topLeft];
+                        color[bottomRight2] = color[bottomRight];
 
                         triangles[trisIndex + 3] = topLeft2;
                         triangles[trisIndex + 4] = topRight;
@@ -199,6 +214,8 @@ public class GridTerrain : MonoBehaviour
                         vertices[bottomLeft2] = vertices[bottomLeft];
                         uvs[topRight2] = uvs[topRight];
                         uvs[bottomLeft2] = uvs[bottomLeft];
+                        color[topRight2] = color[topRight];
+                        color[bottomLeft2] = color[bottomLeft];
 
                         triangles[trisIndex + 3] = topRight2;
                         triangles[trisIndex + 4] = bottomRight;
@@ -236,6 +253,7 @@ public class GridTerrain : MonoBehaviour
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
+        mesh.colors32 = color;
 
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();

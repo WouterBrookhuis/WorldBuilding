@@ -10,6 +10,7 @@
 		_VertNormal ("Vertical (Normal)", 2D) = "bump" {}
 		_BlendStart ("Blend Start", Range(0, 1)) = 0.3
 		_BlendEnd("Blend End", Range(0, 1)) = 0.5
+		_VertexColorBlend ("Vertex Color Blend", Range(0, 1)) = 0
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
     }
@@ -33,6 +34,7 @@
         struct Input
         {
             float2 uv_MainTex;
+			float4 color : COLOR;
 			float3 worldNormal;INTERNAL_DATA
         };
 
@@ -42,6 +44,7 @@
         half _Metallic;
         fixed4 _Color;
 		fixed4 _VertColor;
+		half _VertexColorBlend;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -64,6 +67,7 @@
 				normalDot < _BlendStart ? tex2D(_VertTex, IN.uv_MainTex) * _VertColor :
 				normalDot > _BlendEnd ? tex2D(_MainTex, IN.uv_MainTex) * _Color :
 				lerp(tex2D(_MainTex, IN.uv_MainTex) * _Color, tex2D(_VertTex, IN.uv_MainTex) * _VertColor, 1 - (normalDot - _BlendStart) / (_BlendEnd - _BlendStart));
+			c = lerp(c, IN.color, _VertexColorBlend);
             o.Albedo = c.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
