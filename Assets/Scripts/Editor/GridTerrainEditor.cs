@@ -127,15 +127,19 @@ public class GridTerrainEditor : Editor
         // Handle tool (no object changing) events
         _brushes[_brushIndex].HandleEvents(Event.current);
 
+        UnityEngine.Profiling.Profiler.BeginSample("GridTerrainEditor Brush Drawing");
         // Draw actual brush points
         _brushes[_brushIndex].Draw(nodeCoord, terrain);
+        UnityEngine.Profiling.Profiler.EndSample();
 
         // Handle editing events
         var nodes = serializedObject.FindProperty("TerrainData.Nodes");
         if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
         {
             var action = _paints[_paintIndex].GetNodeAction(Event.current);
+            UnityEngine.Profiling.Profiler.BeginSample("GridTerrainEditor Brush Application");
             _brushes[_brushIndex].Apply(nodeCoord, nodes, terrain, action);
+            UnityEngine.Profiling.Profiler.EndSample();
             needMeshUpdate = true;
         }
 
