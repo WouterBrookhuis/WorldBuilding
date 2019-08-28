@@ -21,15 +21,15 @@ public class FloodBrush : Brush
         _showFloodPreview = GUILayout.Toggle(_showFloodPreview, "Show Flood Preview (slow)");
     }
 
-    public override void Apply(Vector2Int userNode, SerializedProperty nodes, GridTerrain terrain, NodeAction action)
+    public override void Apply(Vector2Int userNode, GridTerrainData terrainData, NodeAction action)
     {
         var nodesToCheck = new Queue<Vector2Int>();
         var checkedNodes = new HashSet<Vector2Int>();
         nodesToCheck.Enqueue(userNode);
         int guard = 0;
-        var userNodeValue = nodes.GetArrayElementAtIndex(userNode.x + userNode.y * terrain.TerrainData.Width).intValue;
+        var userNodeValue = terrainData[userNode.x, userNode.y];
 
-        while (nodesToCheck.Count > 0 && guard < terrain.Width * terrain.Height)
+        while (nodesToCheck.Count > 0 && guard < terrainData.Width * terrainData.Height)
         {
             var currentNode = nodesToCheck.Dequeue();
             if (checkedNodes.Contains(currentNode))
@@ -38,7 +38,7 @@ public class FloodBrush : Brush
                 continue;
             }
             // Apply the action to this node
-            action(userNode, userNodeValue, currentNode, nodes, terrain);
+            action(userNode, userNodeValue, currentNode, terrainData);
             // Find neighbours that we need to add
             checkedNodes.Add(currentNode);
             Vector2Int relLeft, relTopLeft, relBottomLeft, relRight, relTopRight, relBottomRight, relTop, relBottom;
@@ -47,7 +47,7 @@ public class FloodBrush : Brush
             {
                 left = true;
             }
-            if (currentNode.x < terrain.Width - 1)
+            if (currentNode.x < terrainData.Width - 1)
             {
                 right = true;
             }
@@ -55,7 +55,7 @@ public class FloodBrush : Brush
             {
                 bottom = true;
             }
-            if (currentNode.y < terrain.Height - 1)
+            if (currentNode.y < terrainData.Height - 1)
             {
                 top = true;
             }
@@ -70,53 +70,53 @@ public class FloodBrush : Brush
 
             if (left
                 && !checkedNodes.Contains(relLeft)
-                && nodes.GetArrayElementAtIndex(relLeft.x + relLeft.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relLeft.x, relLeft.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relLeft);
             }
             if (left
                 && top 
                 && !checkedNodes.Contains(relTopLeft)
-                && nodes.GetArrayElementAtIndex(relTopLeft.x + relTopLeft.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relTopLeft.x, relTopLeft.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relTopLeft);
             }
             if (left 
                 && bottom 
                 && !checkedNodes.Contains(relBottomLeft)
-                && nodes.GetArrayElementAtIndex(relBottomLeft.x + relBottomLeft.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relBottomLeft.x, relBottomLeft.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relBottomLeft);
             }
             if (right
                 && !checkedNodes.Contains(relRight)
-                && nodes.GetArrayElementAtIndex(relRight.x + relRight.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relRight.x, relRight.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relRight);
             }
             if (right
                 && top 
                 && !checkedNodes.Contains(relTopRight)
-                && nodes.GetArrayElementAtIndex(relTopRight.x + relTopRight.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relTopRight.x, relTopRight.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relTopRight);
             }
             if (right 
                 && bottom
                 && !checkedNodes.Contains(relBottomRight)
-                && nodes.GetArrayElementAtIndex(relBottomRight.x + relBottomRight.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relBottomRight.x, relBottomRight.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relBottomRight);
             }
             if (top
                 && !checkedNodes.Contains(relTop)
-                && nodes.GetArrayElementAtIndex(relTop.x + relTop.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relTop.x, relTop.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relTop);
             }
             if (bottom 
                 && !checkedNodes.Contains(relBottom)
-                && nodes.GetArrayElementAtIndex(relBottom.x + relBottom.y * terrain.TerrainData.Width).intValue == userNodeValue)
+                && terrainData[relBottom.x, relBottom.y] == userNodeValue)
             {
                 nodesToCheck.Enqueue(relBottom);
             }
@@ -130,7 +130,7 @@ public class FloodBrush : Brush
         if (_showFloodPreview)
         {
             var nodes = new SerializedObject(terrain).FindProperty("TerrainData.Nodes");
-            Apply(userNode, nodes, terrain, DrawAction);
+            //Apply(userNode, nodes, terrain, DrawAction);
         }
         else
         {
@@ -139,9 +139,9 @@ public class FloodBrush : Brush
         }
     }
 
-    private void DrawAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
-    {
-        var drawPoint = terrain.transform.TransformPoint(terrain.TerrainData.GetNodePositionUnchecked(currentNode.x, currentNode.y));
-        Handles.DrawWireCube(drawPoint, Vector3.one * terrain.NodeGizmoSize);
-    }
+    //private void DrawAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, GridTerrainData terrainData)
+    //{
+    //    var drawPoint = terrain.transform.TransformPoint(terrain.TerrainData.GetNodePositionUnchecked(currentNode.x, currentNode.y));
+    //    Handles.DrawWireCube(drawPoint, Vector3.one * terrain.NodeGizmoSize);
+    //}
 }

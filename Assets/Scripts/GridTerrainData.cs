@@ -21,6 +21,22 @@ public class GridTerrainData
     public int Width;
     public int Height;
 
+    /// <summary>
+    /// Creates a copy of the given terrain data.
+    /// </summary>
+    /// <param name="other"></param>
+    public GridTerrainData(GridTerrainData other)
+    {
+        UnityEngine.Profiling.Profiler.BeginSample("GridTerrainData Copy Constructor");
+        Nodes = new int[other.Nodes.Length];
+        Array.Copy(other.Nodes, Nodes, Nodes.Length);
+        EdgeLength = other.EdgeLength;
+        StepHeight = other.StepHeight;
+        Width = other.Width;
+        Height = other.Height;
+        UnityEngine.Profiling.Profiler.EndSample();
+    }
+
     public GridTerrainData() : this(33, 33, 1, 1)
     {
     }

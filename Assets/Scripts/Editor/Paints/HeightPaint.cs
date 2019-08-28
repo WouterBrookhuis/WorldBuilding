@@ -74,36 +74,31 @@ public class HeightPaint : Paint
         }
     }
 
-    private void RandomHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
+    private void RandomHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, GridTerrainData editCopy)
     {
         var height = Mathf.PerlinNoise(currentNode.x * _randScale.x, currentNode.y * _randScale.y) * _randStrength;
         height = (height) * (_randMaxHeight - _randMinHeight) + _randMinHeight;
         var intHeight = Mathf.Clamp(Mathf.RoundToInt(height), _randMinHeight, _randMaxHeight);
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue = intHeight;
+        editCopy[currentNode.x, currentNode.y] = intHeight;
     }
 
-    private void SetHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
+    private void SetHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, GridTerrainData editCopy)
     {
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue = _setHeight;
+        editCopy[currentNode.x, currentNode.y] = _setHeight;
     }
 
-    private static void LevelHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
+    private static void LevelHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, GridTerrainData editCopy)
     {
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue = userNodeValue;
+        editCopy[currentNode.x, currentNode.y] = userNodeValue;
     }
 
-    private static void IncreaseHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
+    private static void IncreaseHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, GridTerrainData editCopy)
     {
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue++;
+        editCopy[currentNode.x, currentNode.y]++;
     }
 
-    private static void DecreaseHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
+    private static void DecreaseHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, GridTerrainData editCopy)
     {
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue--;
+        editCopy[currentNode.x, currentNode.y]--;
     }
 }

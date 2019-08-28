@@ -16,25 +16,6 @@ public class GridTerrain : MonoBehaviour
     public int Width => TerrainData.Width;
     public int Height => TerrainData.Height;
 
-    private void Start()
-    {
-        /*for(int x = 0; x < Width; x++)
-        {
-            for(int y = 0; y < Height; y++)
-            {
-                if (y < Height * 0.25f || y > Height * 0.75f)
-                {
-                    TerrainData.Nodes[x, y] = x / 3;
-                }
-                else
-                {
-                    TerrainData.Nodes[x, y] = Mathf.Clamp(x / 3, 0, Width / 2 / 3);
-                }
-            }
-        }*/
-
-        GetComponent<MeshFilter>().sharedMesh = GenerateMesh();
-    }
 
     private bool CutNorthWest(Vector3[] vertices, int topLeft, int topRight, int bottomLeft, int bottomRight)
     {

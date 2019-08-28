@@ -103,7 +103,6 @@ public class GridTerrainEditor : Editor
             return;
         }
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
-        serializedObject.Update();
         bool needMeshUpdate = false;
         SceneView.currentDrawingSceneView.wantsMouseMove = true;
         if(Event.current.type == EventType.MouseMove)
@@ -133,17 +132,16 @@ public class GridTerrainEditor : Editor
         UnityEngine.Profiling.Profiler.EndSample();
 
         // Handle editing events
-        var nodes = serializedObject.FindProperty("TerrainData.Nodes");
         if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
         {
             var action = _paints[_paintIndex].GetNodeAction(Event.current);
             UnityEngine.Profiling.Profiler.BeginSample("GridTerrainEditor Brush Application");
-            _brushes[_brushIndex].Apply(nodeCoord, nodes, terrain, action);
+            _brushes[_brushIndex].Apply(nodeCoord, terrain.TerrainData, action);
+            Undo.RegisterCompleteObjectUndo(terrain, "GridTerrain");
             UnityEngine.Profiling.Profiler.EndSample();
             needMeshUpdate = true;
         }
 
-        serializedObject.ApplyModifiedProperties();
         if (needMeshUpdate)
         {
             UpdateMeshes(terrain.GenerateMesh(), terrain.GetComponent<MeshFilter>(), terrain.GetComponent<MeshCollider>());

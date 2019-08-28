@@ -15,15 +15,15 @@ public class BasicBrush : Brush
         EditorGUILayout.EndHorizontal();
     }
 
-    public override void Apply(Vector2Int userNode, SerializedProperty nodes, GridTerrain terrain, NodeAction action)
+    public override void Apply(Vector2Int userNode, GridTerrainData terrainData, NodeAction action)
     {
-        var userNodeValue = nodes.GetArrayElementAtIndex(userNode.x + userNode.y * terrain.TerrainData.Width).intValue;
+        var userNodeValue = terrainData[userNode.x, userNode.y];
 
-        for(int x = Mathf.Max(userNode.x - _paintRadius, 0); x < Mathf.Min(userNode.x + _paintRadius + 1, terrain.TerrainData.Width); x++)
+        for(int x = Mathf.Max(userNode.x - _paintRadius, 0); x < Mathf.Min(userNode.x + _paintRadius + 1, terrainData.Width); x++)
         {
-            for(int y = Mathf.Max(userNode.y - _paintRadius, 0); y < Mathf.Min(userNode.y + _paintRadius + 1, terrain.TerrainData.Height); y++)
+            for(int y = Mathf.Max(userNode.y - _paintRadius, 0); y < Mathf.Min(userNode.y + _paintRadius + 1, terrainData.Height); y++)
             {
-                action(userNode, userNodeValue, new Vector2Int(x, y), nodes, terrain);
+                action(userNode, userNodeValue, new Vector2Int(x, y), terrainData);
             }
         }
     }

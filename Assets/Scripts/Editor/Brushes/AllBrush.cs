@@ -5,15 +5,15 @@ using UnityEngine;
 
 public class AllBrush : Brush
 {
-    public override void Apply(Vector2Int userNode, SerializedProperty nodes, GridTerrain terrain, NodeAction action)
+    public override void Apply(Vector2Int userNode, GridTerrainData terrainData, NodeAction action)
     {
-        var userNodeValue = nodes.GetArrayElementAtIndex(userNode.x + userNode.y * terrain.TerrainData.Width).intValue;
+        var userNodeValue = terrainData[userNode.x, userNode.y];
 
-        for(int x = 0; x < terrain.TerrainData.Width; x++)
+        for(int x = 0; x < terrainData.Width; x++)
         {
-            for(int y = 0; y < terrain.TerrainData.Height; y++)
+            for(int y = 0; y < terrainData.Height; y++)
             {
-                action(userNode, userNodeValue, new Vector2Int(x, y), nodes, terrain);
+                action(userNode, userNodeValue, new Vector2Int(x, y), terrainData);
             }
         }
     }
