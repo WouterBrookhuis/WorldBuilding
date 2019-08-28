@@ -6,12 +6,18 @@ using UnityEditor;
 [CustomEditor(typeof(GridTerrain))]
 public class GridTerrainEditor : Editor
 {
-    private Brush[] _brushes = new Brush[] {
+    private Brush[] _brushes = new Brush[] 
+    {
         new BasicBrush(),
         new FloodBrush(),
     };
+    private Paint[] _paints = new Paint[]
+    {
+        new HeightPaint(),
+    };
     private bool _paintMode;
     private int _brushIndex = 0;
+    private int _paintIndex = 0;
 
     public override void OnInspectorGUI()
     {
@@ -36,14 +42,24 @@ public class GridTerrainEditor : Editor
         }
 
         _paintMode = GUILayout.Toggle(_paintMode, "Paint Mode", "Button", GUILayout.Height(50));
+
+        GUILayout.Label("Brush Options", EditorStyles.boldLabel);
         var brushIcons = new GUIContent[_brushes.Length];
         for(int i = 0; i < _brushes.Length; i++)
         {
             brushIcons[i] = new GUIContent(_brushes[i].GetType().Name);
         }
         _brushIndex = GUILayout.SelectionGrid(_brushIndex, brushIcons, 4);
-        GUILayout.Label("Brush Options", EditorStyles.boldLabel);
         _brushes[_brushIndex].OnInspectorGUI();
+
+        GUILayout.Label("Paint Options", EditorStyles.boldLabel);
+        var paintIcons = new GUIContent[_paints.Length];
+        for(int i = 0; i < _paints.Length; i++)
+        {
+            paintIcons[i] = new GUIContent(_paints[i].GetType().Name);
+        }
+        _paintIndex = GUILayout.SelectionGrid(_paintIndex, paintIcons, 4);
+        _paints[_paintIndex].OnInspectorGUI();
 
         serializedObject.ApplyModifiedProperties();
     }
@@ -117,19 +133,8 @@ public class GridTerrainEditor : Editor
         var nodes = serializedObject.FindProperty("TerrainData.Nodes");
         if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
         {
-            if (Event.current.shift)
-            {
-                _brushes[_brushIndex].Apply(nodeCoord, nodes, terrain, LevelHeightAction);
-            }
-            else if (Event.current.control)
-            {
-                _brushes[_brushIndex].Apply(nodeCoord, nodes, terrain, DecreaseHeightAction);
-            }
-            else
-            {
-                _brushes[_brushIndex].Apply(nodeCoord, nodes, terrain, IncreaseHeightAction);
-            }
-            
+            var action = _paints[_paintIndex].GetNodeAction(Event.current);
+            _brushes[_brushIndex].Apply(nodeCoord, nodes, terrain, action);
             needMeshUpdate = true;
         }
 
@@ -140,21 +145,4 @@ public class GridTerrainEditor : Editor
         }
     }
 
-    private static void LevelHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
-    {
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue = userNodeValue;
-    }
-
-    private static void IncreaseHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
-    {
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue++;
-    }
-
-    private static void DecreaseHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
-    {
-        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
-        elementProp.intValue--;
-    }
 }
