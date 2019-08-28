@@ -8,10 +8,16 @@ public class HeightPaint : Paint
     private GUIContent[] _modes = {
         new GUIContent("Increment"),
         new GUIContent("Level"),
-        new GUIContent("Set")
+        new GUIContent("Set"),
+        new GUIContent("Random")
     };
     private int _modeIndex;
     private int _setHeight;
+
+    private int _randMinHeight = 0;
+    private int _randMaxHeight = 20;
+    private float _randStrength = 1;
+    private Vector2 _randScale = new Vector2(0.05f, 0.05f);
 
     public override void OnInspectorGUI()
     {
@@ -27,6 +33,25 @@ public class HeightPaint : Paint
             _setHeight = EditorGUILayout.IntSlider(_setHeight, 0, 20);
             EditorGUILayout.EndHorizontal();
         }
+        else if (_modeIndex == 3)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel("Min Height");
+            _randMinHeight = EditorGUILayout.IntSlider(_randMinHeight, 0, 20);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel("Max Height");
+            _randMaxHeight = EditorGUILayout.IntSlider(_randMaxHeight, 0, 20);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel("Strength");
+            _randStrength = EditorGUILayout.Slider(_randStrength, 0, 2);
+            EditorGUILayout.EndHorizontal();
+
+            _randScale = EditorGUILayout.Vector2Field("Scale", _randScale);
+        }
     }
 
     public override Brush.NodeAction GetNodeAction(Event e)
@@ -41,10 +66,21 @@ public class HeightPaint : Paint
                 return LevelHeightAction;
             case 2:
                 return SetHeightAction;
+            case 3:
+                return RandomHeightAction;
             default:
                 Debug.LogError("Unknown _modeIndex for HeightPaint tool: " + _modeIndex);
                 return IncreaseHeightAction;
         }
+    }
+
+    private void RandomHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)
+    {
+        var height = Mathf.PerlinNoise(currentNode.x * _randScale.x, currentNode.y * _randScale.y) * _randStrength;
+        height = (height) * (_randMaxHeight - _randMinHeight) + _randMinHeight;
+        var intHeight = Mathf.Clamp(Mathf.RoundToInt(height), _randMinHeight, _randMaxHeight);
+        var elementProp = nodes.GetArrayElementAtIndex(currentNode.x + currentNode.y * terrain.TerrainData.Width);
+        elementProp.intValue = intHeight;
     }
 
     private void SetHeightAction(Vector2Int userNode, int userNodeValue, Vector2Int currentNode, SerializedProperty nodes, GridTerrain terrain)

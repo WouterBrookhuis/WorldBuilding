@@ -10,6 +10,7 @@ public class GridTerrainEditor : Editor
     {
         new BasicBrush(),
         new FloodBrush(),
+        new AllBrush(),
     };
     private Paint[] _paints = new Paint[]
     {
