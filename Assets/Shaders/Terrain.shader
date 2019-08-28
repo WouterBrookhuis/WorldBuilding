@@ -5,7 +5,9 @@
         _Color ("Flat Color", Color) = (1,1,1,1)
 		_VertColor ("Vertical Color", Color) = (1,1,1,1)
         _MainTex ("Flat (RGB)", 2D) = "white" {}
+		_MainNormal ("Flat (Normal)", 2D) = "bump" {}
 		_VertTex ("Vertical (RGB)", 2D) = "white" {}
+		_VertNormal ("Vertical (Normal)", 2D) = "bump" {}
 		_BlendStart ("Blend Start", Range(0, 1)) = 0.3
 		_BlendEnd("Blend End", Range(0, 1)) = 0.5
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
@@ -25,11 +27,13 @@
 
         sampler2D _MainTex;
 		sampler2D _VertTex;
+		sampler2D _MainNormal;
+		sampler2D _VertNormal;
 
         struct Input
         {
             float2 uv_MainTex;
-			float3 worldNormal;
+			float3 worldNormal;INTERNAL_DATA
         };
 
 		half _BlendStart;
@@ -55,7 +59,7 @@
         {
             // Albedo comes from a texture tinted by color
 			float3 up = { 0, 1.0, 0 };
-			float normalDot = dot(up, IN.worldNormal);
+			float normalDot = dot(up, WorldNormalVector(IN, o.Normal));
             fixed4 c = 
 				normalDot < _BlendStart ? tex2D(_VertTex, IN.uv_MainTex) * _VertColor :
 				normalDot > _BlendEnd ? tex2D(_MainTex, IN.uv_MainTex) * _Color :
@@ -65,6 +69,11 @@
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;
+			fixed3 n = 
+				normalDot < _BlendStart ? UnpackNormal(tex2D(_VertNormal, IN.uv_MainTex)) :
+				normalDot > _BlendEnd ? UnpackNormal(tex2D(_MainNormal, IN.uv_MainTex)) :
+				lerp(UnpackNormal(tex2D(_MainNormal, IN.uv_MainTex)), UnpackNormal(tex2D(_VertNormal, IN.uv_MainTex)), 1 - (normalDot - _BlendStart) / (_BlendEnd - _BlendStart));
+			o.Normal = n;
         }
         ENDCG
     }
