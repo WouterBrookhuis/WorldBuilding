@@ -63,6 +63,9 @@ public class GridTerrainEditor : Editor
         _paints[_paintIndex].OnInspectorGUI();
 
         serializedObject.ApplyModifiedProperties();
+
+        Undo.undoRedoPerformed -= OnUndo;
+        Undo.undoRedoPerformed += OnUndo;
     }
 
     private void UpdateMeshes(Mesh mesh, MeshFilter meshFilter, MeshCollider meshCollider)
@@ -136,8 +139,8 @@ public class GridTerrainEditor : Editor
         {
             var action = _paints[_paintIndex].GetNodeAction(Event.current);
             UnityEngine.Profiling.Profiler.BeginSample("GridTerrainEditor Brush Application");
-            _brushes[_brushIndex].Apply(nodeCoord, terrain.TerrainData, action);
             Undo.RegisterCompleteObjectUndo(terrain, "GridTerrain");
+            _brushes[_brushIndex].Apply(nodeCoord, terrain.TerrainData, action);
             UnityEngine.Profiling.Profiler.EndSample();
             needMeshUpdate = true;
         }
@@ -145,6 +148,26 @@ public class GridTerrainEditor : Editor
         if (needMeshUpdate)
         {
             UpdateMeshes(terrain.GenerateMesh(), terrain.GetComponent<MeshFilter>(), terrain.GetComponent<MeshCollider>());
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Testing seems to indicate this is called whenever the object is deselected
+        // whcih is exactly what we want.
+        Undo.undoRedoPerformed -= OnUndo;
+    }
+
+    private void OnUndo()
+    {
+        // Older meshes may get deleted by unity so to ensure there is a mesh
+        // after an undo operation we just regenerate it every time.
+        var terrain = target as GridTerrain;
+        if (terrain != null)
+        {
+            UpdateMeshes(terrain.GenerateMesh(),
+                terrain.GetComponent<MeshFilter>(),
+                terrain.GetComponent<MeshCollider>());
         }
     }
 
